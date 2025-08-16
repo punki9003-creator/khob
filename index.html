@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demo Tìm Kiếm Web - Dark Mode</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-6">
+  <div class="max-w-2xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-6">🔍 Tìm Kiếm Vật Liệu (Giao Diện Tối)</h1>
+    <input
+      id="searchInput"
+      type="text"
+      placeholder="Nhập mã cần tìm..."
+      class="w-full p-3 rounded border shadow mb-6 bg-gray-800 text-white placeholder-gray-400"
+    />
+    <div id="results" class="space-y-4"></div>
+  </div>
+
+  <script>
+    let data = [];
+
+    async function fetchData() {
+      const response = await fetch('data.json');
+      data = await response.json();
+    }
+
+    const input = document.getElementById("searchInput");
+    const resultsDiv = document.getElementById("results");
+
+    function search() {
+      const keyword = input.value.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+
+      if (!keyword.trim()) {
+        resultsDiv.innerHTML = "";
+        return;
+      }
+
+      const filtered = data.filter(item => {
+        const text = (item.title + " " + item.description + " " + item.location)
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/\p{Diacritic}/gu, "");
+        return text.includes(keyword);
+      });
+
+      if (filtered.length === 0) {
+        resultsDiv.innerHTML = `
+          <div class="text-center text-gray-400 italic">Không tìm thấy kết quả nào...</div>
+        `;
+        return;
+      }
+
+      resultsDiv.innerHTML = filtered.map(item => `
+        <div class="bg-gray-800 rounded shadow p-4 flex gap-4 items-center">
+          <img src="${item.image}" class="w-32 h-20 object-cover rounded border border-gray-700" />
+          <div>
+            <h2 class="text-xl font-semibold text-white">${item.title}</h2>
+            <p class="text-gray-300">${item.description}</p>
+            <p class="text-sm text-gray-400 italic">📍 Vị trí: ${item.location}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    input.addEventListener("input", search);
+    fetchData();
+  </script>
+</body>
+</html>
